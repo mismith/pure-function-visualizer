@@ -1,15 +1,15 @@
 {
-  "name": "input-output",
+  "name": "pure-function-visualizer",
   "version": "0.1.0",
-  "description": "Visually connect pure functions modules via inputs and outputs",
+  "description": "Visually connect pure function modules via inputs and outputs",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "browser-sync start --server --index index.html --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify"
+    "start": "browser-sync start --server --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "browser-sync": "^2.11.1"
-}
+  }
 }
