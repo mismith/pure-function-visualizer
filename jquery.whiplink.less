@@ -1,0 +1,57 @@
+@import "css3.inc";
+
+@whip_size:  2px;
+@point_size: 4px;
+
+.wl-whip {
+	.box-shadow(~"0 0 3px rgba(0,0,0,.5), 0 0 0 1px #FFF");
+	.transition(~"all .15s cubic-bezier(0,1,1,1)");
+	.transform-origin(left center);
+	position:absolute;
+	height:2px;
+	width:0;
+	background:#000;
+	height:@whip_size;
+	margin:-@whip_size/2 0;
+	pointer-events:none;
+	
+	.wl-handle {
+		.border-radius(@point_size);
+		.box-shadow(~"0 0 3px rgba(0,0,0,.5), 0 0 0 1px #FFF");
+		position:absolute;
+		width:@point_size;
+		height:@point_size;
+		top:@whip_size/2;
+		margin:-@point_size/2;
+	 	background:#000;
+		
+		&.wl-handle-from {
+			left:0;
+		}
+		&.wl-handle-to {
+			right:0;
+		}
+	}
+	&.wl-active {
+		.transition(none);
+		
+		&,
+		.wl-handle {
+			background:#59F;
+		}
+	}
+	&.wl-missed {
+		visibility:hidden;
+		
+		&,
+		.wl-handle {
+			background:red;
+		}
+	}
+	&.wl-selected {
+		&,
+		.wl-handle {
+			background:#FC0;
+		}
+	}
+}

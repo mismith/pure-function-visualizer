@@ -1,0 +1,15 @@
+{
+  "name": "input-output",
+  "version": "1.0.0",
+  "description": "Connect various modules via inputs and outputs",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "browser-sync start --server --index index.html --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.11.1"
+}
+}

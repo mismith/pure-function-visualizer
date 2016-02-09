@@ -1,0 +1,30 @@
+
+.flex-row {
+	display: flex;
+	flex-direction: row;
+}
+.flex-column {
+	display: flex;
+	flex-direction: column;
+}
+.flex-inline {
+	display: inline-flex;
+}
+.flex-row,
+.flex-column {
+	padding: 0;
+	margin: 0;
+}
+.flex {
+	flex: 1;
+}
+
+
+div > ul {
+	flex-basis: 50%;
+}
+
+.function-container {
+	padding: 10px;
+	border: solid 1px black;
+}
