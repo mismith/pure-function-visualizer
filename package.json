@@ -1,7 +1,7 @@
 {
   "name": "input-output",
-  "version": "1.0.0",
-  "description": "Connect various modules via inputs and outputs",
+  "version": "0.1.0",
+  "description": "Visually connect pure functions modules via inputs and outputs",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
