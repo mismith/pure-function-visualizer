@@ -1,15 +1,26 @@
 {
   "name": "pure-function-visualizer",
   "version": "0.1.0",
-  "description": "Visually connect pure function modules via inputs and outputs",
+  "description": "Visually connect pure function containers via inputs and outputs",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "browser-sync start --server --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify"
   },
-  "author": "",
+  "homepage": "https://mismith.github.io/pure-function-visualizer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mismith/pure-function-visualizer"
+  },
+  "bugs": {
+    "url": "https://github.com/mismith/pure-function-visualizer/issues"
+  },
+  "author": "Murray Smith <murray@mismith.info> (http://mismith.info)",
   "license": "MIT",
   "devDependencies": {
     "browser-sync": "^2.11.1"
+  },
+  "dependencies": {
+    "whiplinker": "^0.5.0"
   }
 }
