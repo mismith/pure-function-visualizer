@@ -5,7 +5,9 @@
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "browser-sync start --server --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify"
+    "watch:css": "postcss --use postcss-cssnext --output style.css style.pcss --watch",
+    "serve": "browser-sync start --server --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify",
+    "start": "npm run watch:css & npm run serve"
   },
   "homepage": "https://mismith.github.io/pure-function-visualizer",
   "repository": {
@@ -18,7 +20,9 @@
   "author": "Murray Smith <murray@mismith.info> (http://mismith.info)",
   "license": "MIT",
   "devDependencies": {
-    "browser-sync": "^2.11.1"
+    "browser-sync": "^2.11.1",
+    "postcss-cli": "^2.5.0",
+    "postcss-cssnext": "^2.4.0"
   },
   "dependencies": {
     "whiplinker": "^0.5.0"

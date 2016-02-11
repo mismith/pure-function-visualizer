@@ -1,4 +1,4 @@
-import {Component, ElementRef, Attribute} from 'angular2/core';
+import {Component, ElementRef, Input, Attribute} from 'angular2/core';
 
 export class WhiplinkerService {
 	private _instance: WhiplinkService;
@@ -6,6 +6,16 @@ export class WhiplinkerService {
 	constructor() {
 		if ( ! WhiplinkerService._instance) {
 			WhiplinkerService._instance = new WhipLinker();
+			
+			WhiplinkerService._instance.setOptions({
+				allowTarget: function (e) {
+					// only allow one link per target
+					return ! e.targetElement.checked;
+				},
+			});
+			WhiplinkerService._instance
+				.on('hit', e => e.sourceElement.checked = e.targetElement.checked = true)
+				.on('delete', e => e.sourceElement.checked = e.targetElement.checked = false);
 		}
 	}
 	instance() {
@@ -14,31 +24,20 @@ export class WhiplinkerService {
 }
 
 @Component({
-	selector: 'whiplinkNode',
-	template: `<input type="radio" tabindex="-1" />`,
+	selector: 'whiplinkerNode',
+	template: `<input type="radio" onclick="return false;" tabindex="-1" />`,
 	bindings: [WhiplinkerService],
 })
-export class WhiplinkNode {
-	constructor(whiplinker: WhiplinkerService, @Attribute('type') type = 'source', el: ElementRef) {
-		this.wl = whiplinker.instance();
-		this.wl
-			.on('hit', function (e) {
-				e.sourceElement.checked = e.targetElement.checked = true;
-			})
-			.on('delete', function (e) {
-				e.sourceElement.checked = e.targetElement.checked = false;
-			})
-			.on('select', function (e) {
-				e.whiplinkElement.style.boxShadow = 'inset 0 0 0 3px rgb(59, 153, 252)';
-			})
-			.on('deselect', function (e) {
-				e.whiplinkElement.style.boxShadow = null;
-			});
-		
-		if (type === 'target') {
-			this.wl.addTargetElement(el.nativeElement);
-		} else {
-			this.wl.addSourceElement(el.nativeElement);
+export class WhiplinkerNode {
+	@Input() whiplinker = new WhiplinkerService().instance();
+	
+	constructor(@Attribute('type') private type, private el: ElementRef) { }
+	ngOnInit() {
+		if (this.type !== 'target') {
+			this.whiplinker.hookSourceElement(this.el.nativeElement.firstChild);
+		}
+		if (this.type !== 'source') {
+			this.whiplinker.hookTargetElement(this.el.nativeElement.firstChild);
 		}
 	}
 }

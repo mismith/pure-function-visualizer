@@ -1,0 +1,104 @@
+:root {
+	--bg: #202327;
+	--primary: #51535F;
+	--lighter: #EEE;
+	--accent: rgb(59, 153, 252);
+}
+
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	font-family: sans-serif;
+	width: 100%;
+	height: 100%;
+	background-color: var(--bg);
+	color: var(--lighter);
+	padding: 10px;
+	margin: 0;
+}
+.flex-row {
+	display: flex;
+	flex-direction: row;
+}
+.flex-column {
+	display: flex;
+	flex-direction: column;
+}
+.flex-inline {
+	display: inline-flex;
+}
+.flex-row,
+.flex-column {
+	padding: 0;
+	margin: 0;
+}
+.flex {
+	flex: 1;
+}
+
+.wl-whiplink {
+	background: #FFF9;
+}
+.pure-function-container {
+	background-color: var(--primary);
+	padding: 0 0 3px;
+	border: solid 1px black;
+	border-radius: 3px;
+	
+	& header {
+		background-color: #61636F;
+		padding: 3px 0;
+		margin-bottom: 3px;
+		border-radius: 3px 3px 0 0;
+		
+		& output {
+			font-size: 14px;
+			font-weight: bold;
+			text-align: center;
+		}
+	}
+	& ul {
+		flex-basis: 50%;
+		
+		& li {
+			display: flex;
+			align-items: center;
+			margin: 1px 0;
+			
+			& .name {
+				flex: 1;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+				overflow: hidden;
+				font-size: 12px;
+				padding: 0 10px;
+				
+				&.right {
+					text-align: right;
+				}
+			}
+			& .value {
+				width: 50px;
+			}
+			& whiplinkerNode {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				width: 10px;
+				
+				&[type=target] {
+					& input {
+						margin: 0 0 0 -10px;
+					}
+				}
+				&[type=source] {
+					& input {
+						margin: 0 -10px 0 0;
+					}
+				}
+			}
+		}
+	}
+}

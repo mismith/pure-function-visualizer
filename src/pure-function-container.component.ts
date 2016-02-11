@@ -1,29 +1,39 @@
-import {Component, Input} from 'angular2/core';
+import {Component, Input, ElementRef} from 'angular2/core';
 import {Moveable} from './moveable';
-import {WhiplinkNode, WhiplinkerService} from './whiplinker';
+import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 
 @Component({
 	selector: 'pure-function-container',
 	template: `
-		<div class="function-container flex-column flex-inline" moveable (move)="whiplinker.instance().repaint()">
+		<div class="pure-function-container flex-column flex-inline" moveable (move)="refresh()">
 			<header class="flex-row">
-				<button (click)="addInput('Input #' + (inputs.length + 1))">+</button>
-				<input [(ngModel)]="name" placeholder="Function Name" class="flex" />
-				<button (click)="addOutput('Output #' + (outputs.length + 1))">+</button>
+				<!--<button (click)="addInput({name: 'Input #' + (inputs.length + 1)})">+</button>-->
+				<output [innerHTML]="name" class="flex"></output>
+				<!--<button (click)="addOutput({name: 'Output #' + (outputs.length + 1)})">+</button>-->
 			</header>
 			<div class="flex-row">
-				<ul class="flex-column">
-					<li *ngFor="#input of inputs; #i = index" class="flex-row">
-						<whiplinkNode type="target"></whiplinkNode>
-						<input [(ngModel)]="input.name" placeholder="Input Name" class="flex" />
-						<button (click)="removeInput(i)">&ndash;</button>
+				<ul class="flex-column inputs">
+					<li *ngFor="#input of inputs; #i = index;">
+						<whiplinkerNode type="target"></whiplinkerNode>
+						<div>
+							<input type="{{ input.type || 'text' }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event);" (blur)="onInput(input, $event);" (change)="onInput(input, $event);" class="value" />
+						</div>
+						<output [innerHTML]="input.name" class="name"></output>
+						<!--<div>
+							<button (click)="removeInput(i)">&ndash;</button>
+						</div>-->
 					</li>
 				</ul>
-				<ul class="flex-column">
-					<li *ngFor="#output of outputs; #i = index" class="flex-row">
-						<button (click)="removeOutput(i)">&ndash;</button>
-						<input [(ngModel)]="output.name" placeholder="Output Name" class="flex" />
-						<whiplinkNode type="source"></whiplinkNode>
+				<ul class="flex-column outputs">
+					<li *ngFor="#output of outputs; #i = index;">
+						<!--<div>
+							<button (click)="removeOutput(i)">&ndash;</button>
+						</div>-->
+						<output [innerHTML]="output.name" class="name right"></output>
+						<div>
+							<input type="{{ output.type || 'text' }}" [(ngModel)]="output.value" class="value" readonly />
+						</div>
+						<whiplinkerNode type="source"></whiplinkerNode>
 					</li>
 				</ul>
 			</div>
@@ -33,33 +43,81 @@ import {WhiplinkNode, WhiplinkerService} from './whiplinker';
 		WhiplinkerService,
 	],
 	directives: [
-		WhiplinkNode,
+		WhiplinkerNode,
 		Moveable,
 	],
 })
 export class PureFunctionContainer {
-	@Input() name: string = 'Function';
-	public inputs = [];
-	public outputs = [];
+	@Input() whiplinker = new WhiplinkerService().instance();
 	
-	constructor(private whiplinker: WhiplinkerService) {
+	@Input() name: string = '';
+	@Input() inputs: string = [];
+	@Input() outputs: string = [];
+	@Input() handler = function(){};
+	@Input() fn: object = {};
+	
+	constructor(private el: ElementRef) { }
+	ngOnInit() {
+		Object.assign(this, this.fn);
+		this.refresh();
+	}
+	refresh() {
+		this.handler.apply(this, this.inputs.map(input => input.value)).forEach((value, i) => {
+			this.outputs[i].value = value;
+		});
+		
+		this.whiplinkerNodes = this.el.nativeElement.getElementsByTagName('whiplinkerNode');
+		this.whiplinker.setOptions({
+			allowTarget: e => {
+				// only allow one link per target
+				// don't allow links to from own sources to own targets
+				return ! e.targetElement.checked && Array.from(this.whiplinkerNodes).indexOf(e.targetElement.parentNode) < 0;
+			},
+		});
+		
+		this.whiplinker.repaint();
 	}
 	
-	addInput(name = '') {
-		this.inputs.push({name});
-		this.whiplinker.instance().repaint();
+	// inputs
+	onInput(input, e) {
+		if (typeof input.onchange === 'function') {
+			input.onchange(e, this);
+		}
+		this.refresh();
 	}
-	addOutput(name = '') {
-		this.outputs.push({name});
-		this.whiplinker.instance().repaint();
+	addInput(input = {name: '', onchange: function(){}}) {
+		this.inputs.push(input);
+		
+		this.refresh();
 	}
-	
-	removeInput(index) {
+	removeInput(index: number) {
 		this.inputs.splice(index, 1);
-		this.whiplinker.instance().repaint();
+		
+		this.refresh();
 	}
-	removeOutput(index) {
+	changeNumberOfInputs(newNumberOfInputs: number, onAdd = function(i){}) {
+		if (newNumberOfInputs < this.inputs.length) {
+			// remove from end
+			while (newNumberOfInputs < this.inputs.length) {
+				this.removeInput(this.inputs.length - 1);
+			}
+		} else {
+			// append new input
+			while (this.inputs.length < newNumberOfInputs) {
+				this.addInput(onAdd(this.inputs.length));
+			}
+		}
+	}
+	
+	// outputs
+	addOutput(output = {name: ''}) {
+		this.outputs.push(output);
+		
+		this.refresh();
+	}
+	removeOutput(index: number) {
 		this.outputs.splice(index, 1);
-		this.whiplinker.instance().repaint();
+		
+		this.refresh();
 	}
 }
