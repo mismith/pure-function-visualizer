@@ -59,20 +59,20 @@ export class PureFunctionContainer {
 	constructor(private el: ElementRef) { }
 	ngOnInit() {
 		Object.assign(this, this.fn);
+		
+		// only allow one link per target
+		this.whiplinker.addTargetFilter(e => ! e.targetElement.checked);
+		
+		// can't target own input
+		this.whiplinker.addTargetFilter(e => {
+			return ! (this.el.nativeElement.contains(e.sourceElement) && this.el.nativeElement.contains(e.targetElement));
+		});
+		
 		this.refresh();
 	}
 	refresh() {
 		this.handler.apply(this, this.inputs.map(input => input.value)).forEach((value, i) => {
 			this.outputs[i].value = value;
-		});
-		
-		this.whiplinkerNodes = this.el.nativeElement.getElementsByTagName('whiplinkerNode');
-		this.whiplinker.setOptions({
-			allowTarget: e => {
-				// only allow one link per target
-				// don't allow links to from own sources to own targets
-				return ! e.targetElement.checked && Array.from(this.whiplinkerNodes).indexOf(e.targetElement.parentNode) < 0;
-			},
 		});
 		
 		this.whiplinker.repaint();
