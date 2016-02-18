@@ -10,13 +10,16 @@
 }
 html,
 body {
-	font-family: sans-serif;
 	width: 100%;
 	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+body {
 	background-color: var(--bg);
 	color: var(--lighter);
+	font-family: sans-serif;
 	padding: 10px;
-	margin: 0;
 }
 .flex-row {
 	display: flex;
@@ -37,11 +40,15 @@ body {
 .flex {
 	flex: 1;
 }
+.bg-primary {
+	background-color: var(--primary);
+}
 
 .wl-whiplink {
 	background: #FFF9;
 }
-.pure-function-container {
+.pf-component {
+	position: absolute;
 	background-color: var(--primary);
 	padding: 0 0 3px;
 	border: solid 1px black;

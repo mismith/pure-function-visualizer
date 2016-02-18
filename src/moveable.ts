@@ -9,9 +9,9 @@ import {Directive, ElementRef, Renderer, Input, Output, EventEmitter} from 'angu
 	},
 })
 export class Moveable {
-	public x: number = 0;
-	public y: number = 0;
-	@Input() container: HTMLElement = document.body;
+	private x: number = 0;
+	private y: number = 0;
+	@Input() moveable: HTMLElement = document.body;
 	@Output() move: EventEmitter = new EventEmitter();
 
 	constructor(private el: ElementRef, private renderer: Renderer) {
@@ -19,7 +19,8 @@ export class Moveable {
 		this.renderer.setElementProperty(this.el, 'draggable', true);
 	}
 	ngOnInit() {
-		this.renderer.on(this.container, 'dragover', e => e.preventDefault());
+		this.renderer.on(this.moveable, 'dragover', e => e.preventDefault());
+		this.setPosition();
 	}
 	private onStart(e) {
 		// hide drag/drop UI
@@ -32,16 +33,24 @@ export class Moveable {
 		this.x = e.offsetX;
 		this.y = e.offsetY;
 		this.renderer.setElementStyle(this.el, 'position', 'absolute');
-		this.doTranslation(e.x, e.y);
+		this.setPosition(e.x, e.y);
 	}
 	private onDrag(e) {
-		if (e.x && e.y) this.doTranslation(e.x, e.y);
+		if (e.x && e.y) this.setPosition(e.x, e.y);
 	}
-	private doTranslation(x = 0, y = 0) {
-		let limits = this.container.getBoundingClientRect(),
-			left = Math.max(0, limits.left, Math.min(limits.left + limits.width, x - this.x)),
-			top  = Math.max(0, limits.top,  Math.min(limits.top  + limits.height, y - this.y));
+	setPosition(x, y) {
+		let marginX = 10,
+			marginY = 10;
 		
+		let self = this.el.nativeElement.getBoundingClientRect(),
+			limits = this.moveable.getBoundingClientRect();
+			
+		if (x === undefined) x = self.left;
+		if (y === undefined) y = self.top;
+		
+		let left = Math.min(Math.max(marginX, limits.left, Math.min(limits.left + limits.width, x - this.x)), limits.right - self.width - marginX),
+			top  = Math.min(Math.max(marginY, limits.top,  Math.min(limits.top  + limits.height, y - this.y)), limits.bottom - self.height - marginY);
+			
 		this.move.next({left, top});
 		this.renderer.setElementStyle(this.el, 'left', (left || 0) + 'px');
 		this.renderer.setElementStyle(this.el, 'top',  (top || 0)  + 'px');

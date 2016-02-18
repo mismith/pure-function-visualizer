@@ -1,19 +1,39 @@
 //our root app component
 import {Component} from 'angular2/core';
-import {PureFunctionContainer} from './pure-function-container.component';
+import {PFComponent} from './pf-component';
+import {WhiplinkerService} from './whiplinker';
 
 @Component({
-	selector: 'my-app',
+	selector: '[my-app]',
 	template: `
-		<pure-function-container *ngFor="#fn of functions" [fn]="fn"></pure-function-container>
+		<main class="flex" (drop)="onDragDrop($event)">
+			<pf-component *ngFor="#actor of actors" [options]="getActorType(actor.type)" [position]="actor.position"></pf-component>
+		</main>
+		<aside class="bg-primary">
+			<ul class="flex-column">
+				<li *ngFor="#actorType of actorTypes" class="flex-row">
+					<button [innerHTML]="actorType.name" draggable="true" (dragstart)="onDragStart($event, actorType.name)"></button>
+				</li>
+			</ul>
+		</aside>
 	`,
+	bindings: [
+		WhiplinkerService,
+	],
 	directives: [
-		PureFunctionContainer,
+		PFComponent,
 	],
 })
 export class App {
+	private whiplinker = new WhiplinkerService().instance();
+	private actors: array = [];
+	
 	constructor() {
-		this.functions = [
+		// only allow one link per target
+		this.whiplinker.addTargetFilter(e => ! e.targetElement.checked);
+		
+		// function pool
+		this.actorTypes = [
 			{
 				name: 'minMax',
 				inputs: [
@@ -22,11 +42,12 @@ export class App {
 						type: 'number',
 						min: 2,
 						value: 2,
-						onchange: (e, pureFunctionContainer) => {
-							pureFunctionContainer.changeNumberOfInputs(parseInt(e.target.value) + 1, i => {
+						onchange: function(e) {
+							this.changeNumberOfInputs(parseInt(e.target.value) + 1, i => {
 								return {
 									name: 'num' + i,
 									type: 'number',
+									value: 0,
 								};
 							});
 						},
@@ -34,10 +55,12 @@ export class App {
 					{
 						name: 'num1',
 						type: 'number',
+						value: 0,
 					},
 					{
 						name: 'num2',
 						type: 'number',
+						value: 0,
 					},
 				],
 				outputs: [
@@ -50,10 +73,12 @@ export class App {
 						type: 'number',
 					},
 				],
-				handler: (qty: number, ...values) => [
-					Math.min.apply(this, values),
-					Math.max.apply(this, values),
-				];
+				handler: function(qty: number, ...values) {
+					return [
+						Math.min.apply(this, values),
+						Math.max.apply(this, values),
+					];
+				},
 			},
 			{
 				name: 'caseChange',
@@ -66,15 +91,19 @@ export class App {
 				outputs: [
 					{
 						name: 'lowercase',
+						type: 'string',
 					},
 					{
 						name: 'uppercase',
+						type: 'string',
 					},
 				],
-				handler: (str: string = '') => [
-					str.toLowerCase(),
-					str.toUpperCase(),
-				];
+				handler: function(str: string = '') {
+					return [
+						str.toLowerCase(),
+						str.toUpperCase(),
+					];
+				},
 			},
 			{
 				name: 'contains',
@@ -85,6 +114,7 @@ export class App {
 					},
 					{
 						name: 'needle',
+						type: 'any',
 					},
 				],
 				outputs: [
@@ -97,17 +127,17 @@ export class App {
 						type: 'number',
 					},
 				],
-				handler: (arr: array = [], needle) => {
+				handler: function(arr: array = [], needle) {
 					if (typeof arr === 'string') arr = arr.split(',');
 					var i = arr.indexOf(needle);
 					return [
 						i >= 0,
 						i,
 					];
-				};
+				},
 			},
 			{
-				name: 'image',
+				name: 'img',
 				inputs: [
 					{
 						name: 'src',
@@ -125,5 +155,48 @@ export class App {
 				},
 			},
 		];
+		
+		//this.addActor('img');
+		this.addActor('minMax', {
+			position: {
+				left: 500,
+				top: 200,
+			},
+		});
+		this.addActor('caseChange', {
+			position: {
+				left: 900,
+				top: 300,
+			},
+		});
+	}
+	
+	// actors
+	getActorType(type) {
+		return this.actorTypes.find(actorType => actorType.name === type);
+	}
+	addActor(type, options = {}) {
+		this.actors.push(Object.assign({
+			type: type,
+		}, options));
+	}
+	removeActor(index) {
+		this.actors.splice(index, 1);
+	}
+	
+	// drag/drop
+	onDragStart(e, type) {
+		e.dataTransfer.setData('text/plain', type);
+	}
+	onDragDrop(e) {
+		var type = e.dataTransfer.getData('text/plain');
+		if (type) {
+			this.addActor(type, {
+				position: {
+					left: e.x - 10,
+					top:  e.y - 10,
+				},
+			});
+		}
 	}
 }
