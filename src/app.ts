@@ -50,7 +50,7 @@ export class App {
 						type: 'number',
 					},
 				],
-				handler: (qty, ...values) => [
+				handler: (qty: number, ...values) => [
 					Math.min.apply(this, values),
 					Math.max.apply(this, values),
 				];
@@ -60,6 +60,7 @@ export class App {
 				inputs: [
 					{
 						name: 'string',
+						type: 'string',
 					},
 				],
 				outputs: [
@@ -70,10 +71,58 @@ export class App {
 						name: 'uppercase',
 					},
 				],
-				handler: (str = '') => [
+				handler: (str: string = '') => [
 					str.toLowerCase(),
 					str.toUpperCase(),
 				];
+			},
+			{
+				name: 'contains',
+				inputs: [
+					{
+						name: 'haystack',
+						type: 'array',
+					},
+					{
+						name: 'needle',
+					},
+				],
+				outputs: [
+					{
+						name: 'contains',
+						type: 'boolean',
+					},
+					{
+						name: 'index',
+						type: 'number',
+					},
+				],
+				handler: (arr: array = [], needle) => {
+					if (typeof arr === 'string') arr = arr.split(',');
+					var i = arr.indexOf(needle);
+					return [
+						i >= 0,
+						i,
+					];
+				};
+			},
+			{
+				name: 'image',
+				inputs: [
+					{
+						name: 'src',
+						type: 'string',
+					},
+				],
+				handler: function(src: string = '') {
+					if ( ! this.img) {
+						var figure = document.createElement('figure');
+						this.img = document.createElement('img');
+						figure.appendChild(this.img);
+						this.el.nativeElement.firstElementChild.appendChild(figure);
+					}
+					this.img.src = src;
+				},
 			},
 		];
 	}

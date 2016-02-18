@@ -6,32 +6,25 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 	selector: 'pure-function-container',
 	template: `
 		<div class="pure-function-container flex-column flex-inline" moveable (move)="refresh()">
-			<header class="flex-row">
-				<!--<button (click)="addInput({name: 'Input #' + (inputs.length + 1)})">+</button>-->
+			<header>
 				<output [innerHTML]="name" class="flex"></output>
-				<!--<button (click)="addOutput({name: 'Output #' + (outputs.length + 1)})">+</button>-->
+				<button (click)="remove()" title="Remove"></button>
 			</header>
 			<div class="flex-row">
 				<ul class="flex-column inputs">
 					<li *ngFor="#input of inputs; #i = index;">
 						<whiplinkerNode type="target"></whiplinkerNode>
-						<div>
-							<input type="{{ input.type || 'text' }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event);" (blur)="onInput(input, $event);" (change)="onInput(input, $event);" class="value" />
+						<div class="value">
+							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event)" (blur)="onInput(input, $event)" (change)="onInput(input, $event)" [title]="input.type + ': ' + input.value" />
 						</div>
 						<output [innerHTML]="input.name" class="name"></output>
-						<!--<div>
-							<button (click)="removeInput(i)">&ndash;</button>
-						</div>-->
 					</li>
 				</ul>
 				<ul class="flex-column outputs">
 					<li *ngFor="#output of outputs; #i = index;">
-						<!--<div>
-							<button (click)="removeOutput(i)">&ndash;</button>
-						</div>-->
 						<output [innerHTML]="output.name" class="name right"></output>
-						<div>
-							<input type="{{ output.type || 'text' }}" [(ngModel)]="output.value" class="value" readonly />
+						<div class="value">
+							<input type="{{ output.type }}" [(ngModel)]="output.value" class="value" [title]="output.type + ': ' + output.value" readonly />
 						</div>
 						<whiplinkerNode type="source"></whiplinkerNode>
 					</li>
@@ -58,6 +51,7 @@ export class PureFunctionContainer {
 	
 	constructor(private el: ElementRef) { }
 	ngOnInit() {
+		// parse options
 		Object.assign(this, this.fn);
 		
 		// only allow one link per target
@@ -71,21 +65,18 @@ export class PureFunctionContainer {
 		this.refresh();
 	}
 	refresh() {
-		this.handler.apply(this, this.inputs.map(input => input.value)).forEach((value, i) => {
-			this.outputs[i].value = value;
+		(this.handler.apply(this, this.inputs.map(input => input.value)) || []).forEach((value, i) => {
+			if (this.outputs[i].value !== value) {
+				this.outputs[i].value = value;
+				this.onOutput(this.outputs[i]);
+			}
 		});
 		
 		this.whiplinker.repaint();
 	}
 	
 	// inputs
-	onInput(input, e) {
-		if (typeof input.onchange === 'function') {
-			input.onchange(e, this);
-		}
-		this.refresh();
-	}
-	addInput(input = {name: '', onchange: function(){}}) {
+	addInput(input = {name: ''}) {
 		this.inputs.push(input);
 		
 		this.refresh();
@@ -108,8 +99,19 @@ export class PureFunctionContainer {
 			}
 		}
 	}
+	onInput(input, e) {
+		if (typeof input.onchange === 'function') {
+			input.onchange(e, this);
+		}
+		this.refresh();
+	}
 	
 	// outputs
+	onOutput(output, e) {
+		if (typeof output.onchange === 'function') {
+			output.onchange(e, this);
+		}
+	}
 	addOutput(output = {name: ''}) {
 		this.outputs.push(output);
 		
@@ -117,6 +119,13 @@ export class PureFunctionContainer {
 	}
 	removeOutput(index: number) {
 		this.outputs.splice(index, 1);
+		
+		this.refresh();
+	}
+	
+	// self
+	remove() {
+		this.el.nativeElement.parentNode.removeChild(this.el.nativeElement);
 		
 		this.refresh();
 	}
