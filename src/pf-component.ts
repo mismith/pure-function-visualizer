@@ -26,7 +26,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 						<div class="value">
 							<input type="{{ output.type }}" [(ngModel)]="output.value" class="value" [title]="'<' + output.type + '> ' + output.value" readonly />
 						</div>
-						<whiplinkerNode type="source"></whiplinkerNode>
+						<whiplinkerNode type="source" (from)="whiplinker.data({actor: PFComponent, output: output})"></whiplinkerNode>
 					</li>
 				</ul>
 			</div>
@@ -72,6 +72,8 @@ export class PFComponent {
 		this.whiplinker.addTargetFilter(this.targetFilter);
 		
 		this.refresh();
+		
+		return this.PFComponent = this;
 	}
 	ngOnDestroy() {
 		// clean up filters

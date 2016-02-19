@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, Attribute} from 'angular2/core';
+import {Component, ElementRef, Input, Output, EventEmitter} from 'angular2/core';
 
 export class WhiplinkerService {
 	private _instance: WhiplinkService;
@@ -20,22 +20,42 @@ export class WhiplinkerService {
 })
 export class WhiplinkerNode {
 	@Input() whiplinker = new WhiplinkerService().instance();
+	@Input() type: string;
 	
-	constructor(@Attribute('type') private type, private el: ElementRef) { }
+	@Output() from   = new EventEmitter();
+	@Output() hit    = new EventEmitter();
+	@Output() delete = new EventEmitter();
+	
+	constructor(private el: ElementRef) { }
 	ngOnInit() {
-		// checked when linked
-		this.whiplinker
-			.on('hit', e => e.sourceElement.checked = e.targetElement.checked = true)
-			.on('delete', e => e.sourceElement.checked = e.targetElement.checked = false);
+		var el = this.el.nativeElement;
+		el.addEventListener('wl-from', e => {
+			// dispatch
+			this.from.next(e);
+		});
+		el.addEventListener('wl-hit', e => {
+			// checked when linked
+			e.detail.sourceElement.checked = e.detail.targetElement.checked = true;
+			
+			// dispatch
+			this.hit.next(e);
+		});
+		el.addEventListener('wl-delete', e => {
+			// checked only when linked
+			e.detail.sourceElement.checked = e.detail.targetElement.checked = false;
+			
+			// dispatch
+			this.delete.next(e);
+		});
 		
 		// setup hooks
 		if (this.type !== 'target') {
 			// it's a source
-			this.whiplinker.hookSourceElement(this.el.nativeElement.firstChild);
+			this.whiplinker.hookSourceElement(el.firstChild);
 		}
 		if (this.type !== 'source') {
 			// it's a target
-			this.whiplinker.hookTargetElement(this.el.nativeElement.firstChild);
+			this.whiplinker.hookTargetElement(el.firstChild);
 		}
 	}
 }
