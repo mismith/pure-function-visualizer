@@ -1,4 +1,4 @@
-import {Component, Input, ElementRef} from 'angular2/core';
+import {Component, Input, Output, ElementRef, EventEmitter} from 'angular2/core';
 import {Moveable} from './moveable';
 import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 
@@ -8,6 +8,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 		<div class="pf-component flex-column flex-inline" [moveable]="el.nativeElement.parentNode" (move)="refresh()">
 			<header>
 				<output [innerHTML]="name" class="flex"></output>
+				<button (click)="remove.next()" title="Remove"></button>
 			</header>
 			<div class="flex-row">
 				<ul class="flex-column inputs">
@@ -51,6 +52,8 @@ export class PFComponent {
 	
 	@Input() options: object = {};
 	
+	@Output() remove = new EventEmitter();
+	
 	constructor(private el: ElementRef) { }
 	ngOnInit() {
 		// parse options
@@ -69,6 +72,10 @@ export class PFComponent {
 		this.whiplinker.addTargetFilter(this.targetFilter);
 		
 		this.refresh();
+	}
+	ngOnDestroy() {
+		// clean up filters
+		this.whiplinker.removeTargetFilter(this.targetFilter);
 	}
 	refresh() {
 		// process all inputs into output values

@@ -1,5 +1,5 @@
 //main entry point
 import {bootstrap} from 'angular2/platform/browser';
-import {App} from './app';
+import {PFVisualizer} from './app';
 
-bootstrap(App, []);
+bootstrap(PFVisualizer, []);

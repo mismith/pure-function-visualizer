@@ -4,15 +4,15 @@ import {PFComponent} from './pf-component';
 import {WhiplinkerService} from './whiplinker';
 
 @Component({
-	selector: '[my-app]',
+	selector: '[pf-visualizer]',
 	template: `
 		<main class="flex" (drop)="onDragDrop($event)">
-			<pf-component *ngFor="#actor of actors" [options]="getActorType(actor.type)" [position]="actor.position"></pf-component>
+			<pf-component *ngFor="#actor of actors" [options]="getActorTemplate(actor.type)" [position]="actor.position" (remove)="removeActor(actor)"></pf-component>
 		</main>
 		<aside class="bg-primary">
 			<ul class="flex-column">
-				<li *ngFor="#actorType of actorTypes" class="flex-row">
-					<button [innerHTML]="actorType.name" draggable="true" (dragstart)="onDragStart($event, actorType.name)"></button>
+				<li *ngFor="#actorTemplate of actorTemplates" class="flex-row">
+					<button [innerHTML]="actorTemplate.name" draggable="true" (dragstart)="onDragStart($event, actorTemplate.name)"></button>
 				</li>
 			</ul>
 		</aside>
@@ -24,7 +24,7 @@ import {WhiplinkerService} from './whiplinker';
 		PFComponent,
 	],
 })
-export class App {
+export class PFVisualizer {
 	private whiplinker = new WhiplinkerService().instance();
 	private actors: array = [];
 	
@@ -33,7 +33,7 @@ export class App {
 		this.whiplinker.addTargetFilter(e => ! e.targetElement.checked);
 		
 		// function pool
-		this.actorTypes = [
+		this.actorTemplates = [
 			{
 				name: 'minMax',
 				inputs: [
@@ -172,16 +172,17 @@ export class App {
 	}
 	
 	// actors
-	getActorType(type) {
-		return this.actorTypes.find(actorType => actorType.name === type);
+	getActorTemplate(type) {
+		return this.actorTemplates.find(actorTemplate => actorTemplate.name === type);
 	}
 	addActor(type, options = {}) {
 		this.actors.push(Object.assign({
 			type: type,
 		}, options));
 	}
-	removeActor(index) {
-		this.actors.splice(index, 1);
+	removeActor(indexOrActor) {
+		if (typeof indexOrActor !== 'number') indexOrActor = this.actors.indexOf(indexOrActor);
+		this.actors.splice(indexOrActor, 1);
 	}
 	
 	// drag/drop
