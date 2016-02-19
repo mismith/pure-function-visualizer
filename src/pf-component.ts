@@ -13,9 +13,9 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 			<div class="flex-row">
 				<ul class="flex-column inputs">
 					<li *ngFor="#input of inputs; #i = index;">
-						<whiplinkerNode type="target" (hit)="onTargetHit($event)"></whiplinkerNode>
+						<whiplinkerNode type="target" (hit)="onTargetHit(input, $event)"></whiplinkerNode>
 						<div class="value">
-							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event)" (blur)="onInput(input, $event)" (change)="onInput(input, $event)" [title]="'<' + input.type + '> ' + input.value" />
+							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event)" (blur)="onInput(input, $event)" (change)="onInput(input, $event)" (paste)="onInput(input, $event)" [title]="'<' + input.type + '> ' + input.value" />
 						</div>
 						<output [innerHTML]="input.name" class="name"></output>
 					</li>
@@ -120,6 +120,7 @@ export class PFComponent {
 		if (typeof input.onchange === 'function') {
 			input.onchange.call(this, e);
 		}
+		
 		this.refresh();
 	}
 	
@@ -145,7 +146,13 @@ export class PFComponent {
 	// onSourceHit(e, output) {
 	// 	console.log(arguments, this);
 	// }
-	onTargetHit(e) {
+	onTargetHit(input, e) {
 		this.whiplinker.sync(e.detail, e.detail.sourceElement.parentNode.previousElementSibling.firstElementChild, e.detail.targetElement.parentNode.nextElementSibling.firstElementChild); // @HACKy
+		
+		//console.log(e.detail.data, {actor: this, input: input});
+		
+		// @TODO: how to watch output.value for changes?
+		input.value = e.detail.data.output.value;
+		this.onInput(input, e);
 	}
 }
