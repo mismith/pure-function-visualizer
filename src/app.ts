@@ -99,6 +99,7 @@ export class PFVisualizer {
 					},
 				],
 				handler: function(str: string = '') {
+					str = str + '';
 					return [
 						str.toLowerCase(),
 						str.toUpperCase(),
@@ -128,7 +129,6 @@ export class PFVisualizer {
 					},
 				],
 				handler: function(arr: array = [], needle) {
-					if (typeof arr === 'string') arr = arr.split(',');
 					var i = arr.indexOf(needle);
 					return [
 						i >= 0,
