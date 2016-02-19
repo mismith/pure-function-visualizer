@@ -25,6 +25,6 @@
     "postcss-cssnext": "^2.4.0"
   },
   "dependencies": {
-    "whiplinker": "^0.9.0"
+    "whiplinker": "^0.9.1"
   }
 }

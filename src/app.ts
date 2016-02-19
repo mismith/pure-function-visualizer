@@ -7,7 +7,7 @@ import {WhiplinkerService} from './whiplinker';
 	selector: '[pf-visualizer]',
 	template: `
 		<main class="flex" (drop)="onDragDrop($event)">
-			<pf-component *ngFor="#actor of actors" [options]="getActorTemplate(actor.type)" [position]="actor.position" (remove)="removeActor(actor)"></pf-component>
+			<pf-component *ngFor="#actor of actors" [templateData]="getActorTemplate(actor.template)" [options]="actor.options" (remove)="removeActor(actor)"></pf-component>
 		</main>
 		<aside class="bg-primary">
 			<ul class="flex-column">
@@ -42,8 +42,8 @@ export class PFVisualizer {
 						type: 'number',
 						min: 2,
 						value: 2,
-						onchange: function(e) {
-							this.changeNumberOfInputs(parseInt(e.target.value) + 1, i => {
+						onchange: function(input) {
+							this.changeNumberOfInputs(parseInt(input.value) + 1, i => {
 								return {
 									name: 'num' + i,
 									type: 'number',
@@ -172,13 +172,14 @@ export class PFVisualizer {
 	}
 	
 	// actors
-	getActorTemplate(type) {
-		return this.actorTemplates.find(actorTemplate => actorTemplate.name === type);
+	getActorTemplate(template) {
+		return this.actorTemplates.find(actorTemplate => actorTemplate.name === template);
 	}
-	addActor(type, options = {}) {
-		this.actors.push(Object.assign({
-			type: type,
-		}, options));
+	addActor(template, options = {}) {
+		this.actors.push({
+			template: template,
+			options:  options,
+		});
 	}
 	removeActor(indexOrActor) {
 		if (typeof indexOrActor !== 'number') indexOrActor = this.actors.indexOf(indexOrActor);
@@ -186,13 +187,13 @@ export class PFVisualizer {
 	}
 	
 	// drag/drop
-	onDragStart(e, type) {
-		e.dataTransfer.setData('text/plain', type);
+	onDragStart(e, template) {
+		e.dataTransfer.setData('text/plain', template);
 	}
 	onDragDrop(e) {
-		var type = e.dataTransfer.getData('text/plain');
-		if (type) {
-			this.addActor(type, {
+		var template = e.dataTransfer.getData('text/plain');
+		if (template) {
+			this.addActor(template, {
 				position: {
 					left: e.x - 10,
 					top:  e.y - 10,

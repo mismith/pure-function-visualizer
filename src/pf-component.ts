@@ -13,9 +13,9 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 			<div class="flex-row">
 				<ul class="flex-column inputs">
 					<li *ngFor="#input of inputs; #i = index;">
-						<whiplinkerNode type="target" (hit)="onTargetHit(input, $event)"></whiplinkerNode>
+						<whiplinkerNode type="target" (hit)="linkValue($event.detail.data, input)" (delete)="unlinkValue($event.detail.data, input)"></whiplinkerNode>
 						<div class="value">
-							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event)" (blur)="onInput(input, $event)" (change)="onInput(input, $event)" (paste)="onInput(input, $event)" [title]="'<' + input.type + '> ' + input.value" />
+							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" [title]="'<' + input.type + '> ' + input.value" />
 						</div>
 						<output [innerHTML]="input.name" class="name"></output>
 					</li>
@@ -26,7 +26,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 						<div class="value">
 							<input type="{{ output.type }}" [(ngModel)]="output.value" class="value" [title]="'<' + output.type + '> ' + output.value" readonly />
 						</div>
-						<whiplinkerNode type="source" (from)="whiplinker.data({actor: PFComponent, output: output})"></whiplinkerNode>
+						<whiplinkerNode type="source" (from)="whiplinker.data(output)"></whiplinkerNode>
 					</li>
 				</ul>
 			</div>
@@ -43,12 +43,11 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 export class PFComponent {
 	@Input() whiplinker = new WhiplinkerService().instance();
 	
-	@Input() name: string = '';
-	@Input() inputs: string = [];
-	@Input() outputs: string = [];
-	@Input() handler = function(){};
-	
-	@Input() position: object = {top: 0, left: 0};
+	@Input() templateData: object = {};
+	private name: string;
+	private handler;
+	private inputs: string = [];
+	private outputs: string = [];
 	
 	@Input() options: object = {};
 	
@@ -56,14 +55,11 @@ export class PFComponent {
 	
 	constructor(private el: ElementRef) { }
 	ngOnInit() {
-		// parse options
-		Object.assign(this, this.options);
-		this.inputs  = Array.from(this.inputs).map(input   => Object.assign({}, input));
-		this.outputs = Array.from(this.outputs).map(output => Object.assign({}, output));
-		
 		// set initial position
-		this.el.nativeElement.firstElementChild.style.left = this.position.left + 'px';
-		this.el.nativeElement.firstElementChild.style.top  = this.position.top + 'px';
+		if (this.options.position) {
+			this.el.nativeElement.firstElementChild.style.left = this.options.position.left + 'px';
+			this.el.nativeElement.firstElementChild.style.top  = this.options.position.top + 'px';
+		}
 		
 		// can't target own input
 		this.targetFilter = e => {
@@ -71,37 +67,32 @@ export class PFComponent {
 		};
 		this.whiplinker.addTargetFilter(this.targetFilter);
 		
-		this.refresh();
+		// fill from template
+		['name','handler'].forEach(k => if(this[k] === undefined) this[k] = this.templateData[k]);
+		Array.from(this.templateData.inputs || []).map(input   => this.addInput(Object.assign({}, input)));
+		Array.from(this.templateData.outputs || []).map(output => this.addOutput(Object.assign({}, output)));
 		
-		return this.PFComponent = this;
+		this.refresh();
 	}
 	ngOnDestroy() {
-		// clean up filters
+		// clean up whiplinker filters
 		this.whiplinker.removeTargetFilter(this.targetFilter);
-	}
-	refresh() {
-		// process all inputs into output values
-		(this.handler.apply(this, this.inputs.map(input => input.value)) || []).forEach((value, i) => {
-			if (this.outputs[i].value !== value) {
-				this.outputs[i].value = value;
-				this.onOutput(this.outputs[i]);
-			}
-		});
 		
-		// make sure whiplinks are up-to-date
-		this.whiplinker.repaint();
+		// clean up linkedValues
+		for (var i = this.inputs.length - 1; i >= 0; i--) this.removeInput(i);
+		for (i = this.outputs.length - 1; i >= 0; i--) this.removeOutput(i);
 	}
 	
 	// inputs
 	addInput(input = {name: ''}) {
 		this.inputs.push(input);
 		
-		this.refresh();
+		// watch value
+		Object.observe(input, changes => this.inputChange(input, changes));
 	}
 	removeInput(index: number) {
+		this.unlinkValues(this.inputs[index]);
 		this.inputs.splice(index, 1);
-		
-		this.refresh();
 	}
 	changeNumberOfInputs(newNumberOfInputs: number, onAdd = function(i){}) {
 		if (newNumberOfInputs < this.inputs.length) {
@@ -116,43 +107,78 @@ export class PFComponent {
 			}
 		}
 	}
-	onInput(input, e) {
-		if (typeof input.onchange === 'function') {
-			input.onchange.call(this, e);
-		}
-		
-		this.refresh();
-	}
 	
 	// outputs
-	onOutput(output, e) {
-		if (typeof output.onchange === 'function') {
-			output.onchange.call(this, e);
-		}
-		// don't refresh since this will be called because of a refresh
-	}
 	addOutput(output = {name: ''}) {
 		this.outputs.push(output);
 		
-		this.refresh();
+		// watch value
+		Object.observe(output, changes => this.outputChange(output, changes));
 	}
 	removeOutput(index: number) {
+		this.unlinkValues(this.outputs[index]);
 		this.outputs.splice(index, 1);
+	}
+	
+	// changes
+	refresh() {
+		// process all inputs into output values
+		(this.handler.apply(this, this.inputs.map(input => input.value)) || []).forEach((value, i) => {
+			if (this.outputs[i]) {
+				if (this.outputs[i].value !== value) {
+					this.outputs[i].value = value;
+				}
+			}
+		});
 		
+		// make sure whiplinks are up-to-date
+		this.whiplinker.repaint();
+	}
+	inputChange(input, changes) {
+		if (typeof input.onchange === 'function') {
+			input.onchange.call(this, input, changes);
+		}
+		
+		// changes here can affect our ouputs, so refresh
 		this.refresh();
+	}
+	outputChange(output, changes) {
+		if (typeof output.onchange === 'function') {
+			output.onchange.call(this, output, changes);
+		}
+		
+		// changes here should propagate to linked inputs, if any
+		this.propagateValues(output);
 	}
 	
 	// links
-	// onSourceHit(e, output) {
-	// 	console.log(arguments, this);
-	// }
-	onTargetHit(input, e) {
-		this.whiplinker.sync(e.detail, e.detail.sourceElement.parentNode.previousElementSibling.firstElementChild, e.detail.targetElement.parentNode.nextElementSibling.firstElementChild); // @HACKy
+	linkValue(output, input) {
+		// forward link it
+		output.links = output.links || [];
+		output.links.push(input);
 		
-		//console.log(e.detail.data, {actor: this, input: input});
+		// back link it (for easy/two-way removal)
+		input.links = input.links || [];
+		input.links.push(output);
 		
-		// @TODO: how to watch output.value for changes?
-		input.value = e.detail.data.output.value;
-		this.onInput(input, e);
+		// propagate the value immediately
+		this.propagateValue(output, input);
+	}
+	unlinkValue(near, far) {
+		if(near.links) near.links.splice(near.links.indexOf(far), 1);
+		if(far.links)  far.links.splice(far.links.indexOf(near), 1);
+	}
+	unlinkValues(near, far) {
+		if (near.links) {
+			near.links.forEach(far => this.unlinkValue(near, far));
+		}
+	}
+	propagateValue(output, input) {
+		input.value = output.value;
+	}
+	propagateValues(output) {
+		if (output.links) {
+			output.links.forEach(input => this.propagateValue(output, input));
+		}
 	}
 }
