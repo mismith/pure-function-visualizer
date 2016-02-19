@@ -13,7 +13,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 			<div class="flex-row">
 				<ul class="flex-column inputs">
 					<li *ngFor="#input of inputs; #i = index;">
-						<whiplinkerNode type="target"></whiplinkerNode>
+						<whiplinkerNode type="target" (hit)="onTargetHit($event)"></whiplinkerNode>
 						<div class="value">
 							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" (keyup)="onInput(input, $event)" (blur)="onInput(input, $event)" (change)="onInput(input, $event)" [title]="'<' + input.type + '> ' + input.value" />
 						</div>
@@ -139,5 +139,13 @@ export class PFComponent {
 		this.outputs.splice(index, 1);
 		
 		this.refresh();
+	}
+	
+	// links
+	// onSourceHit(e, output) {
+	// 	console.log(arguments, this);
+	// }
+	onTargetHit(e) {
+		this.whiplinker.sync(e.detail, e.detail.sourceElement.parentNode.previousElementSibling.firstElementChild, e.detail.targetElement.parentNode.nextElementSibling.firstElementChild); // @HACKy
 	}
 }
