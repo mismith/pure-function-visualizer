@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch:css": "postcss --use postcss-cssnext --output style.css style.pcss --watch",
-    "serve": "browser-sync start --server --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify",
+    "serve": "browser-sync start --server --files '**/*.css,**/*.js,**/*.ts,**/*.html' --no-ghost-mode --no-notify --no-ui",
     "start": "npm run watch:css & npm run serve"
   },
   "homepage": "https://mismith.github.io/pure-function-visualizer",
