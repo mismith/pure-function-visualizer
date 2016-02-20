@@ -13,7 +13,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 			<div class="flex-row">
 				<ul class="flex-column inputs">
 					<li *ngFor="#input of inputs; #i = index;">
-						<whiplinkerNode type="target" (hit)="linkValue($event.detail.data, input)" (delete)="unlinkValue($event.detail.data, input)"></whiplinkerNode>
+						<whiplinker-node type="target" (hit)="linkValue($event.detail.data, input)" (delete)="unlinkValue($event.detail.data, input)"></whiplinker-node>
 						<div class="value">
 							<input type="{{ input.type }}" [(ngModel)]="input.value" min="{{ input.min }}" max="{{ input.max }}" [title]="'<' + input.type + '> ' + input.value" />
 						</div>
@@ -26,7 +26,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 						<div class="value">
 							<input type="{{ output.type }}" [(ngModel)]="output.value" class="value" [title]="'<' + output.type + '> ' + output.value" readonly />
 						</div>
-						<whiplinkerNode type="source" (from)="whiplinker.data(output)"></whiplinkerNode>
+						<whiplinker-node type="source" (from)="whiplinker.data(output)"></whiplinker-node>
 					</li>
 				</ul>
 			</div>
@@ -43,11 +43,11 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 export class PFComponent {
 	@Input() whiplinker = new WhiplinkerService().instance();
 	
-	@Input() templateData: object = {};
+	@Input() template;
 	private name: string;
-	private handler;
 	private inputs: string = [];
 	private outputs: string = [];
+	private handler;
 	
 	@Input() options: object = {};
 	
@@ -68,9 +68,10 @@ export class PFComponent {
 		this.whiplinker.addTargetFilter(this.targetFilter);
 		
 		// fill from template
-		['name','handler'].forEach(k => if(this[k] === undefined) this[k] = this.templateData[k]);
-		Array.from(this.templateData.inputs || []).map(input   => this.addInput(Object.assign({}, input)));
-		Array.from(this.templateData.outputs || []).map(output => this.addOutput(Object.assign({}, output)));
+		var template = new this.template();
+		['name','handler'].forEach(k => if(this[k] === undefined) this[k] = template[k]);
+		Array.from(template.inputs || []).map(input   => this.addInput(Object.assign({}, input)));
+		Array.from(template.outputs || []).map(output => this.addOutput(Object.assign({}, output)));
 		
 		this.refresh();
 	}
@@ -136,7 +137,7 @@ export class PFComponent {
 	}
 	inputChange(input, changes) {
 		if (typeof input.onchange === 'function') {
-			input.onchange.call(this, input, changes);
+			input.onchange.call(input, this);
 		}
 		
 		// changes here can affect our ouputs, so refresh
@@ -144,7 +145,7 @@ export class PFComponent {
 	}
 	outputChange(output, changes) {
 		if (typeof output.onchange === 'function') {
-			output.onchange.call(this, output, changes);
+			output.onchange.call(output, this);
 		}
 		
 		// changes here should propagate to linked inputs, if any

@@ -135,7 +135,7 @@ body {
 .pf-component ul li .value input {
 	width: 100%;
 }
-.pf-component ul li whiplinkerNode {
+.pf-component ul li whiplinker-node {
 	display: -webkit-box;
 	display: -webkit-flex;
 	display: -ms-flexbox;
@@ -150,12 +150,12 @@ body {
 	        align-items: center;
 	width: 10px;
 }
-.pf-component ul li whiplinkerNode[type=target] {}
-.pf-component ul li whiplinkerNode[type=target] input {
+.pf-component ul li whiplinker-node[type=target] {}
+.pf-component ul li whiplinker-node[type=target] input {
 	margin: 0 0 0 -10px;
 }
-.pf-component ul li whiplinkerNode[type=source] {}
-.pf-component ul li whiplinkerNode[type=source] input {
+.pf-component ul li whiplinker-node[type=source] {}
+.pf-component ul li whiplinker-node[type=source] input {
 	margin: 0 -10px 0 0;
 }
 .pf-component figure {

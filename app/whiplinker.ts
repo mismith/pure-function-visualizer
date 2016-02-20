@@ -14,7 +14,7 @@ export class WhiplinkerService {
 }
 
 @Component({
-	selector: 'whiplinkerNode',
+	selector: 'whiplinker-node',
 	template: `<input type="radio" onclick="return false;" tabindex="-1" />`,
 	bindings: [WhiplinkerService],
 })
