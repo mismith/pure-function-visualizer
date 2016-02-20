@@ -12,7 +12,7 @@ import {Image} from './actors/image';
 	selector: '[pf-visualizer]',
 	template: `
 		<main class="flex" (drop)="onDragDrop($event)">
-			<pf-component *ngFor="#actor of actors" [template]="actor.template" [options]="actor.options" (remove)="unplaceActor(actor)"></pf-component>
+			<pf-component *ngFor="#actor of actors" [actorTemplate]="actor.template" [options]="actor.options" (remove)="unplaceActor(actor)"></pf-component>
 		</main>
 		<aside class="bg-primary">
 			<ul class="flex-column">

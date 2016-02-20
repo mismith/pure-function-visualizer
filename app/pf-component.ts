@@ -7,7 +7,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 	template: `
 		<div class="pf-component flex-column flex-inline" [moveable]="el.nativeElement.parentNode" (move)="refresh()">
 			<header>
-				<output [innerHTML]="template.name" class="flex"></output>
+				<output [innerHTML]="actor.name" class="flex"></output>
 				<button (click)="remove.next()" title="Remove"></button>
 			</header>
 			<div class="flex-row">
@@ -43,7 +43,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 export class PFComponent {
 	@Input() whiplinker = new WhiplinkerService().instance();
 	
-	@Input() template;
+	@Input() actorTemplate;
 	private actor;
 	private inputs: array = [];
 	private outputs: array = [];
@@ -67,7 +67,7 @@ export class PFComponent {
 		this.whiplinker.addTargetFilter(this.targetFilter);
 		
 		// fill from template
-		this.actor = new this.template();
+		this.actor = new this.actorTemplate();
 		this.actor.inputs.map(input   => this.addInput(input));
 		this.actor.outputs.map(output => this.addOutput(output));
 		
@@ -102,7 +102,7 @@ export class PFComponent {
 		} else {
 			// append new input
 			while (this.inputs.length < newNumberOfInputs) {
-				this.addInput(onAdd(this.inputs.length));
+				this.addInput(onAdd.call(this, this.inputs.length));
 			}
 		}
 	}
@@ -117,6 +117,19 @@ export class PFComponent {
 	removeOutput(index: number) {
 		this.unlinkValues(this.outputs[index]);
 		this.outputs.splice(index, 1);
+	}
+	changeNumberOfOutputs(newNumberOfOutputs: number, onAdd = function(i){}) {
+		if (newNumberOfOutputs < this.outputs.length) {
+			// remove from end
+			while (newNumberOfOutputs < this.outputs.length) {
+				this.removeOutput(this.outputs.length - 1);
+			}
+		} else {
+			// append new output
+			while (this.outputs.length < newNumberOfOutputs) {
+				this.addOutput(onAdd.call(this, this.outputs.length));
+			}
+		}
 	}
 	
 	// changes
