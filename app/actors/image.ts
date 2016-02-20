@@ -1,12 +1,14 @@
 export class Image {
-	name = 'image';
-	inputs = [
-		{
-			name: 'src',
-			type: 'string',
-		},
-	];
-	outputs = [];
+	constructor() {
+		this.name = 'image';
+		this.inputs = [
+			{
+				name: 'src',
+				type: 'string',
+			},
+		];
+		this.outputs = [];
+	}
 	handler(src: string = '') {
 		if ( ! this.img) {
 			var figure = document.createElement('figure');
@@ -14,6 +16,6 @@ export class Image {
 			figure.appendChild(this.img);
 			this.el.nativeElement.firstElementChild.appendChild(figure);
 		}
-		this.img.src = src;
+		this.img.src = src + ''; // coerce type
 	}
 }

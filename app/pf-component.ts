@@ -7,7 +7,7 @@ import {WhiplinkerNode, WhiplinkerService} from './whiplinker';
 	template: `
 		<div class="pf-component flex-column flex-inline" [moveable]="el.nativeElement.parentNode" (move)="refresh()">
 			<header>
-				<output [innerHTML]="name" class="flex"></output>
+				<output [innerHTML]="template.name" class="flex"></output>
 				<button (click)="remove.next()" title="Remove"></button>
 			</header>
 			<div class="flex-row">
@@ -44,10 +44,9 @@ export class PFComponent {
 	@Input() whiplinker = new WhiplinkerService().instance();
 	
 	@Input() template;
-	private name: string;
-	private inputs: string = [];
-	private outputs: string = [];
-	private handler;
+	private actor;
+	private inputs: array = [];
+	private outputs: array = [];
 	
 	@Input() options: object = {};
 	
@@ -68,10 +67,9 @@ export class PFComponent {
 		this.whiplinker.addTargetFilter(this.targetFilter);
 		
 		// fill from template
-		var template = new this.template();
-		['name','handler'].forEach(k => if(this[k] === undefined) this[k] = template[k]);
-		Array.from(template.inputs || []).map(input   => this.addInput(Object.assign({}, input)));
-		Array.from(template.outputs || []).map(output => this.addOutput(Object.assign({}, output)));
+		this.actor = new this.template();
+		this.actor.inputs.map(input   => this.addInput(input));
+		this.actor.outputs.map(output => this.addOutput(output));
 		
 		this.refresh();
 	}
@@ -124,7 +122,7 @@ export class PFComponent {
 	// changes
 	refresh() {
 		// process all inputs into output values
-		(this.handler.apply(this, this.inputs.map(input => input.value)) || []).forEach((value, i) => {
+		(this.actor.handler.apply(this, this.inputs.map(input => input.value)) || []).forEach((value, i) => {
 			if (this.outputs[i]) {
 				if (this.outputs[i].value !== value) {
 					this.outputs[i].value = value;

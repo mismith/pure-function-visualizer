@@ -2,6 +2,7 @@
 import {Component} from 'angular2/core';
 import {PFComponent} from './pf-component';
 import {WhiplinkerService} from './whiplinker';
+
 import {MinMax} from './actors/minmax';
 import {CaseChange} from './actors/casechange';
 import {Contains} from './actors/contains';
