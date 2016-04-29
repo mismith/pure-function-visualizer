@@ -23,8 +23,5 @@
     "browser-sync": "^2.11.1",
     "postcss-cli": "^2.5.0",
     "postcss-cssnext": "^2.4.0"
-  },
-  "dependencies": {
-    "whiplinker": "^0.10.0"
   }
 }
